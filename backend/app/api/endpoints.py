@@ -1,8 +1,7 @@
 from fastapi import APIRouter
 from app.schemas import ChatRequest, ChatResponse
-from app.services.llm_client import query_llm
-from app.services.tools import CHECK_IF_EMPLOYEE_EXISTS_BY_ID_AND_NAME
-from app.db.queries import employee_exists_in_database
+from app.services.llm_client import authenticate_employee, regular_employee_query, ciso_query
+from app.db.queries import employee_exists_in_database, is_ciso
 
 api_router = APIRouter()
 
@@ -14,14 +13,17 @@ async def chat(request: ChatRequest):
     """
     # Query LLM directly (uses default system prompt)
     if request.employee_id and request.employee_name and employee_exists_in_database(request.employee_id, request.employee_name):
-            # response = await query_llm(request.message, history=request.history)
-            return ChatResponse(
-                message="logged in",
-                employee_id=request.employee_id,
-                employee_name=request.employee_name
-            )
+        if is_ciso(request.employee_id, request.employee_name):
+            response = await ciso_query(request.message, history=request.history, employee_id=request.employee_id, employee_name=request.employee_name)
+        else:
+            response = await regular_employee_query(request.message, history=request.history, employee_id=request.employee_id, employee_name=request.employee_name)
+        return ChatResponse(
+            message=response["message"],
+            employee_id=request.employee_id,
+            employee_name=request.employee_name
+        )
     else:
-        response = await query_llm(request.message, instructions="user must give you his name and his id. if user gives you these 2, use the tool to check if the employee exists in the database. if the employee exists, ask user what can you do for him. if the employee does not exist, return an error message. tone: keep insisting", history=request.history, tools=[CHECK_IF_EMPLOYEE_EXISTS_BY_ID_AND_NAME])
+        response = await authenticate_employee(request.message, history=request.history)
         return ChatResponse(
             message=response["message"],
             employee_id=response["employee_id"],

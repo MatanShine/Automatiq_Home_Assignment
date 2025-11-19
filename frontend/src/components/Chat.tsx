@@ -9,20 +9,13 @@ export interface Message extends Omit<ChatMessageProps, 'timestamp'> {
   timestamp: Date;
 }
 
-const EMPLOYEE_ID_KEY = 'chat_employee_id';
-const EMPLOYEE_NAME_KEY = 'chat_employee_name';
-
 export const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{ role: string; content: string }>>([]);
-  const [employeeId, setEmployeeId] = useState<string | null>(() => {
-    return sessionStorage.getItem(EMPLOYEE_ID_KEY);
-  });
-  const [employeeName, setEmployeeName] = useState<string | null>(() => {
-    return sessionStorage.getItem(EMPLOYEE_NAME_KEY);
-  });
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [employeeName, setEmployeeName] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,6 +25,34 @@ export const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Show system message after 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const systemMessage: Message = {
+        id: 'system-init',
+        message: 'Hello! Please provide your name and ID before asking anything further.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => {
+        // Only add if it doesn't already exist
+        if (prev.some(msg => msg.id === 'system-init')) {
+          return prev;
+        }
+        return [...prev, systemMessage];
+      });
+      setHistory((prev) => {
+        // Only add if it doesn't already exist
+        if (prev.some(msg => msg.role === 'system')) {
+          return prev;
+        }
+        return [...prev, { role: 'system', content: systemMessage.message }];
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSendMessage = async (messageText: string) => {
     // Add user message immediately
@@ -61,14 +82,12 @@ export const Chat: React.FC = () => {
         employeeName
       );
       
-      // Save employee_id and employee_name if they're not null
+      // Save employee_id and employee_name if they're not null (only in component state for current session)
       if (response.employee_id !== null && response.employee_id !== undefined) {
         setEmployeeId(response.employee_id);
-        sessionStorage.setItem(EMPLOYEE_ID_KEY, response.employee_id);
       }
       if (response.employee_name !== null && response.employee_name !== undefined) {
         setEmployeeName(response.employee_name);
-        sessionStorage.setItem(EMPLOYEE_NAME_KEY, response.employee_name);
       }
       
       // Add assistant response
