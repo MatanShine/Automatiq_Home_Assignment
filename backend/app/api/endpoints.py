@@ -27,6 +27,6 @@ async def chat(request: ChatRequest):
         return ChatResponse(
             message=response["message"],
             employee_id=response["employee_id"],
-            employee_name=response["employee_name"]
+            employee_name=response["employee_first_name"]
         )
 

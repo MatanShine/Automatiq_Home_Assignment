@@ -4,8 +4,8 @@ OpenAI tool definitions for the LLM to use.
 
 CHECK_IF_EMPLOYEE_EXISTS_BY_ID_AND_NAME = {
     "type": "function",
-    "name": "check_if_employee_exists_by_id_and_name",
-    "description": "Check if an employee exists in the database by their employee ID and employee name. Use this tool to verify employee credentials before allowing access.",
+    "name": "check_if_employee_exists_by_id_and_first_name",
+    "description": "Check if an employee exists in the database by their employee ID and employee first name. Use this tool to verify employee credentials before allowing access.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -13,19 +13,19 @@ CHECK_IF_EMPLOYEE_EXISTS_BY_ID_AND_NAME = {
                 "type": "string",
                 "description": "The unique employee ID to check"
             },
-            "employee_name": {
+            "employee_first_name": {
                 "type": "string",
-                "description": "The employee's name to check"
+                "description": "The employee's first name to check"
             }
         },
-        "required": ["employee_id", "employee_name"]
+        "required": ["employee_id", "employee_first_name"]
     }
 }
 
 FETCH_CURRENT_EMPLOYEE_DATA = {
     "type": "function",
-    "name": "fetch_all_current_user_data",
-    "description": "Fetch the current employee's data including personal information and training video completion status. Use this tool when the employee asks about their own information or training progress.",
+    "name": "fetch_current_user_personal_data_and_watched_videos_data",
+    "description": "Fetch the current employee's personal data and video completion status. Use this tool when the employee asks about their own information or videos.",
 }
 
 FETCH_CURRENT_EMPLOYEE_TRAINING_STATUS = {
@@ -36,7 +36,7 @@ FETCH_CURRENT_EMPLOYEE_TRAINING_STATUS = {
 
 GET_STATISTIC_SUMMARY_ON_TRAINING = {
     "type": "function",
-    "name": "get_statistic_summary_on_training",
+    "name": "get_summary_and_statistics_on_all_employees_training",
     "description": "Get a comprehensive statistical summary of training progress including counts of finished, in-progress, and not-started employees, as well as timing statistics. Use this tool when the CISO asks about overall training statistics or progress metrics.",
 }
 
@@ -65,7 +65,7 @@ GET_ALL_EMPLOYEES_WITH_THIS_TRAINING_STATUS = {
 
 FETCH_DIFFERENT_EMPLOYEE_DATA = {
     "type": "function",
-    "name": "fetch_different_employee_data",
+    "name": "fetch_different_employee_data_using_id_and_first_name",
     "description": "Fetch any employee's data including personal information and training video completion status. Use this tool when the CISO asks about a specific employee's information or training progress.",
     "parameters": {
         "type": "object",
@@ -74,11 +74,11 @@ FETCH_DIFFERENT_EMPLOYEE_DATA = {
                 "type": "string",
                 "description": "The unique employee ID of the employee to fetch data for"
             },
-            "employee_name": {
+            "employee_first_name": {
                 "type": "string",
-                "description": "The employee's first name only"
+                "description": "The employee's first name only to fetch data for"
             }
         },
-        "required": ["employee_id", "employee_name"]
+        "required": ["employee_id", "employee_first_name"]
     }
 }

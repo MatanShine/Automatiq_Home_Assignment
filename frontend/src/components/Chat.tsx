@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage, ChatMessageProps } from './ChatMessage';
 import { InputBar } from './InputBar';
+import { ThemeToggle } from './ThemeToggle';
 import { apiClient } from '../api/client';
 import '../styles/chat.css';
 
@@ -9,13 +10,37 @@ export interface Message extends Omit<ChatMessageProps, 'timestamp'> {
   timestamp: Date;
 }
 
-export const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+interface ChatProps {
+  messages: Message[];
+  history: Array<{ role: string; content: string }>;
+  employeeId?: string | null;
+  employeeName?: string | null;
+  onUpdateSession: (
+    messages: Message[],
+    history: Array<{ role: string; content: string }>,
+    employeeId?: string | null,
+    employeeName?: string | null
+  ) => void;
+  onToggleSidebar: () => void;
+}
+
+export const Chat: React.FC<ChatProps> = ({
+  messages,
+  history,
+  employeeId,
+  employeeName,
+  onUpdateSession,
+  onToggleSidebar
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<Array<{ role: string; content: string }>>([]);
-  const [employeeId, setEmployeeId] = useState<string | null>(null);
-  const [employeeName, setEmployeeName] = useState<string | null>(null);
+  // We keep employee state here to persist across a single session's API calls if needed,
+  // but ideally it should come from the session too if we want to resume perfectly.
+  // For now, we'll rely on the passed history, but the API might need the IDs.
+  // The previous code stored them in state. Let's assume the parent manages them in the session if needed.
+  // Actually, the previous code sent employeeId/Name in sendMessage.
+  // We should probably store them in the session.
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -26,33 +51,28 @@ export const Chat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Show system message after 1 second
+  // Show system message after 1 second if empty
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const systemMessage: Message = {
-        id: 'system-init',
-        message: 'Hello! Please provide your name and ID before asking anything further.',
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => {
-        // Only add if it doesn't already exist
-        if (prev.some(msg => msg.id === 'system-init')) {
-          return prev;
-        }
-        return [...prev, systemMessage];
-      });
-      setHistory((prev) => {
-        // Only add if it doesn't already exist
-        if (prev.some(msg => msg.role === 'system')) {
-          return prev;
-        }
-        return [...prev, { role: 'system', content: systemMessage.message }];
-      });
-    }, 1000);
+    if (messages.length === 0) {
+      const timer = setTimeout(() => {
+        const systemMessage: Message = {
+          id: 'system-init',
+          message: 'Hello! Please provide your name and ID before asking anything further.',
+          isUser: false,
+          timestamp: new Date(),
+        };
 
-    return () => clearTimeout(timer);
-  }, []);
+        // Check again to avoid race conditions
+        if (messages.length === 0) {
+          onUpdateSession(
+            [systemMessage],
+            [{ role: 'system', content: systemMessage.message }]
+          );
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length]); // Only run if messages length changes to 0 (new session)
 
   const handleSendMessage = async (messageText: string) => {
     // Add user message immediately
@@ -62,60 +82,58 @@ export const Chat: React.FC = () => {
       isUser: true,
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMessage]);
-    
-    // Update history with user message
-    const updatedHistory = [
-      ...history,
-      { role: 'user', content: messageText }
-    ];
-    setHistory(updatedHistory);
-    
+
+    const newMessages = [...messages, userMessage];
+    const newHistory = [...history, { role: 'user', content: messageText }];
+
+    // Optimistic update
+    onUpdateSession(newMessages, newHistory);
+
     setIsLoading(true);
     setError(null);
 
     try {
+      // We need to retrieve employeeId/Name from the session (passed via props? or just stored in history?)
+      // The previous code stored them in state.
+      // Let's try to find them in the session or just pass null if we don't have them.
+      // If the backend relies on them being passed back, we need to store them in the session.
+      // The hook has employeeId/Name in ChatSession. We should pass them as props.
+      // For now, I'll assume we can just pass null and the backend handles history.
+      // Wait, the previous code: `setEmployeeId(response.employee_id)`
+
       const response = await apiClient.sendMessage(
         messageText,
-        updatedHistory,
-        employeeId,
-        employeeName
+        newHistory,
+        employeeId ?? null,
+        employeeName ?? null
       );
-      
-      // Save employee_id and employee_name if they're not null (only in component state for current session)
-      if (response.employee_id !== null && response.employee_id !== undefined) {
-        setEmployeeId(response.employee_id);
-      }
-      if (response.employee_name !== null && response.employee_name !== undefined) {
-        setEmployeeName(response.employee_name);
-      }
-      
-      // Add assistant response
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         message: response.message,
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
-      
-      // Update history with assistant response
-      setHistory([
-        ...updatedHistory,
-        { role: 'assistant', content: response.message }
-      ]);
+
+      onUpdateSession(
+        [...newMessages, assistantMessage],
+        [...newHistory, { role: 'assistant', content: response.message }],
+        response.employee_id,
+        response.employee_name
+      );
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
       setError(errorMessage);
-      
-      // Add error message
+
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         message: `Error: ${errorMessage}`,
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMsg]);
+
+      onUpdateSession([...newMessages, errorMsg], newHistory);
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +142,13 @@ export const Chat: React.FC = () => {
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <h1>Cybersecurity Training Assistant</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button className="menu-btn" onClick={onToggleSidebar}>
+            ☰
+          </button>
+          <h1>Cybersecurity Training Assistant</h1>
+        </div>
+        <ThemeToggle />
       </div>
       <div className="chat-messages">
         {messages.length === 0 && (

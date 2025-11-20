@@ -36,7 +36,6 @@ export const InputBar: React.FC<InputBarProps> = ({
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={handleKeyPress}
         placeholder={placeholder}
-        disabled={disabled}
         rows={1}
       />
       <button
