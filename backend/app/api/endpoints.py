@@ -1,7 +1,10 @@
+"""
+API endpoints for the application.
+"""
 from fastapi import APIRouter
-from app.schemas import ChatRequest, ChatResponse
+from app.schemas.api_schemas import ChatRequest, ChatResponse
 from app.services.llm.llm_client import authenticate_employee, regular_employee_query, ciso_query
-from app.db.queries import employee_exists_in_database, is_ciso
+from app.db.verifiers import employee_exists_in_database, is_ciso
 
 api_router = APIRouter()
 

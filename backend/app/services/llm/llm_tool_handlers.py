@@ -3,13 +3,9 @@ Tool handler functions for processing LLM tool calls.
 """
 import json
 from typing import Optional, List, Dict, Any, Tuple, Callable
-from app.db.queries import (
-    employee_exists_in_database,
-    fetch_employee_data,
-    fetch_employee_training_status,
-    get_statistic_summary,
-    fetch_all_employees_with_this_training_status
-)
+from app.db.verifiers import employee_exists_in_database
+from app.db.regular_employee import fetch_employee_data, fetch_employee_training_status
+from app.db.ciso import get_statistic_summary, fetch_all_employees_with_this_training_status
 from app.services.llm.llm_config import (
     KEY_EMPLOYEE_ID, KEY_EMPLOYEE_NAME, KEY_EXISTS, KEY_OUTPUT,
     FUNCTION_CALL_TYPE, KEY_TYPE

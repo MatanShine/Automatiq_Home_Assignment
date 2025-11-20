@@ -1,3 +1,6 @@
+"""
+Main application file.
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import api_router
