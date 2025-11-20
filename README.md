@@ -43,7 +43,13 @@ This starts:
 - Frontend: React/Vite app (TypeScript) on http://localhost:3000
 
 Both services use bind mounts and hot reload for a smooth dev experience.
-
+### 3.1. Running unit tests
+From the project root:
+```bash
+cd backend
+pip install -r requirements.txt
+pytest
+```
 ### 4. Where to Access
 - Frontend (chat UI)
 http://localhost:3000

@@ -7,4 +7,5 @@ python-dotenv
 pytest
 sqlalchemy
 cachetools
+typing_extensions
 
