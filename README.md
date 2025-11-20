@@ -121,5 +121,4 @@ This design:
 ### 7. Known limitations
 -	No persistent sessions across browser tabs or devices (history is in-memory on the frontend).
 -	No admin UI for browsing training stats - the CISO interacts only via chat.
--	No automated tests checked in yet.
 -	Error handling is basic and could be extended (e.g., nicer error boundaries in the UI).
