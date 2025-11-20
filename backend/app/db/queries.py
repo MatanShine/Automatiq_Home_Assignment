@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from typing import Optional, Tuple, List, Dict, Any
 from contextlib import contextmanager
+from app.services.cache.db_cache import cache_analytics
 
 # Get the database path relative to this file
 # In Docker: backend/ is mounted to /app, so backend/app/db/queries.py becomes /app/app/db/queries.py
@@ -261,11 +262,13 @@ def fetch_employee_training_status(employee_id: str, employee_name: str) -> Opti
     finish_dates = list(result[:NUM_VIDEOS])
     return _calculate_training_status_from_finish_dates(finish_dates)
 
+@cache_analytics
 def fetch_all_employees_with_this_training_status(status: str) -> Optional[List[Tuple]]:
     """Fetch all employees with a given training status."""
     query = _build_status_query(status, VIDEO_FINISH_COLUMNS)
     return _execute_query(query, fetch_one=False)
 
+@cache_analytics
 def get_statistic_summary() -> Dict[str, Any]:
     """Get a summary of training statistics."""
     finished_employees = fetch_all_employees_with_this_training_status(STATUS_FINISHED) or []

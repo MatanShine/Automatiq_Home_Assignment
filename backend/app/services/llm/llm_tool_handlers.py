@@ -10,17 +10,17 @@ from app.db.queries import (
     get_statistic_summary,
     fetch_all_employees_with_this_training_status
 )
-from app.services.llm_config import (
+from app.services.llm.llm_config import (
     KEY_EMPLOYEE_ID, KEY_EMPLOYEE_NAME, KEY_EXISTS, KEY_OUTPUT,
     FUNCTION_CALL_TYPE, KEY_TYPE
 )
-from app.services.llm_formatters import (
+from app.services.llm.llm_formatters import (
     format_employee_data_output,
     format_employees_by_status,
     format_json_output
 )
-from app.services.llm_responses import create_function_call_output
-from app.services.llm_client_setup import logger
+from app.services.llm.llm_responses import create_function_call_output
+from app.services.llm.llm_client_setup import logger
 
 
 # Tool handler functions

@@ -2,13 +2,13 @@
 Response utilities for LLM client.
 """
 from typing import Optional, List, Dict, Any, TypedDict
-from app.services.llm_config import (
+from app.services.llm.llm_config import (
     KEY_MESSAGE, KEY_EMPLOYEE_ID, KEY_EMPLOYEE_NAME,
     EMPTY_RESPONSE_MESSAGE, ERROR_MESSAGE_PREFIX,
     FUNCTION_CALL_TYPE, FUNCTION_CALL_OUTPUT_TYPE,
     KEY_TYPE, KEY_CALL_ID, KEY_OUTPUT
 )
-from app.services.llm_client_setup import logger
+from app.services.llm.llm_client_setup import logger
 
 
 class QueryResponse(TypedDict):

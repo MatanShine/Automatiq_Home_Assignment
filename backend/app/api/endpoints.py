@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.schemas import ChatRequest, ChatResponse
-from app.services.llm_client import authenticate_employee, regular_employee_query, ciso_query
+from app.services.llm.llm_client import authenticate_employee, regular_employee_query, ciso_query
 from app.db.queries import employee_exists_in_database, is_ciso
 
 api_router = APIRouter()

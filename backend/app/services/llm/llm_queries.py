@@ -2,22 +2,22 @@
 Main query execution functions for LLM client.
 """
 from typing import Optional, List, Dict, Any, Tuple
-from app.services.llm_client_setup import client, logger
-from app.services.llm_config import (
+from app.services.llm.llm_client_setup import client, logger
+from app.services.llm.llm_config import (
     MODEL_NAME,
     INSTRUCTION_AUTHENTICATE,
     INSTRUCTION_TRAINING_ASSISTANT,
     KEY_EXISTS, KEY_OUTPUT
 )
-from app.services.llm_responses import (
+from app.services.llm.llm_responses import (
     create_response,
     create_error_response,
     extract_output_text,
     build_messages_with_function_calls,
     build_prompt
 )
-from app.services.llm_tool_handlers import get_function_call_outputs
-from app.services.tools import (
+from app.services.llm.llm_tool_handlers import get_function_call_outputs
+from app.services.agent_tools.tools import (
     CHECK_IF_EMPLOYEE_EXISTS_BY_ID_AND_NAME,
     FETCH_CURRENT_EMPLOYEE_DATA,
     FETCH_CURRENT_EMPLOYEE_TRAINING_STATUS,
@@ -26,6 +26,7 @@ from app.services.tools import (
     GET_ALL_EMPLOYEES_WITH_THIS_TRAINING_STATUS,
     FETCH_DIFFERENT_EMPLOYEE_DATA
 )
+from app.services.cache.llm_cache import cache_llm
 
 
 async def _make_initial_request(
@@ -86,6 +87,7 @@ async def execute_query_with_tools(
         return create_error_response(e, employee_id, employee_name)
 
 
+@cache_llm
 async def authenticate_employee(
     user_message: str,
     history: Optional[List[Dict[str, Any]]] = None,
@@ -117,6 +119,7 @@ async def authenticate_employee(
         return create_error_response(e)
 
 
+@cache_llm
 async def ciso_query(
     user_message: str,
     history: Optional[List[Dict[str, Any]]] = None,
@@ -138,6 +141,7 @@ async def ciso_query(
     )
 
 
+@cache_llm
 async def regular_employee_query(
     user_message: str,
     history: Optional[List[Dict[str, Any]]] = None,

@@ -12,14 +12,14 @@ The implementation has been split into logical modules:
 """
 
 # Re-export main query functions for backward compatibility
-from app.services.llm_queries import (
+from app.services.llm.llm_queries import (
     authenticate_employee,
     regular_employee_query,
     ciso_query
 )
 
 # Re-export types and utilities if needed elsewhere
-from app.services.llm_responses import QueryResponse
+from app.services.llm.llm_responses import QueryResponse
 
 __all__ = [
     "authenticate_employee",
